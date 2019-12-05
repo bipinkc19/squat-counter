@@ -1,0 +1,3 @@
+opencv-contrib-python
+numpy
++git@github.com:ildoonet/tf-pose-estimation.git
