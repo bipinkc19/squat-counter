@@ -43,6 +43,8 @@ if __name__ == '__main__':
 
     parser.add_argument('--leg', type=str, default='left')
 
+    parser.add_argument('--vidlocation', type=str, default='')
+
     parser.add_argument('--tensorrt', type=str, default="False",
                         help='for tensorrt process.')
     args = parser.parse_args()
@@ -53,18 +55,21 @@ if __name__ == '__main__':
     else:
         e = TfPoseEstimator(get_graph_path(args.model), target_size=(432, 368), trt_bool=str2bool(args.tensorrt))
 
-    cam = cv2.VideoCapture('./squatting_clipped.mp4')
+    cam = cv2.VideoCapture(args.vidlocation)
     ret_val, image = cam.read()
 
-    fourcc = cv2.VideoWriter_fourcc(*'XVID') 
-    out = cv2.VideoWriter('squat_counter.mp4', fourcc, 30.0, (720, 1280))
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')
+    out = cv2.VideoWriter('squat_counter.mp4', fourcc, 30.0, (1280, 720))
 
     count_of_squats = 0
     squat_pos = 0
     prev_squat_pos = 0
 
     while True:
+
         ret_val, image = cam.read()
+        if ret_val==False:
+            break
         print(image.shape)
         # image = cv2.resize(image, (432, 368))
         # image = cv2.resize(cv2.imread('./squat.jpg'), (432, 368))
@@ -170,7 +175,7 @@ if __name__ == '__main__':
         
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
         out.write(image)
-        # cv2.imshow('tf-pose-estimation result', image)
+        cv2.imshow('tf-pose-estimation result', image)
         # image = cv2.resize(image, (1080, 1920))
 
         if cv2.waitKey(1) == 'q':
