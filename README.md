@@ -5,7 +5,8 @@ Using pose-net to count the number of squats done.
 # Example
 
 ![Demo](squat.gif)
-
+<br>
+![Demo](press.gif)
 ## Credits for the model implementation [this repo](https://github.com/ildoonet/tf-pose-estimation)
 
 - Implemented the use of posenet model and ran it locally setting up the environment.
