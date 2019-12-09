@@ -12,5 +12,9 @@ Using pose-net to count the number of squats done.
 
 ## Run
 ```bash
-➜ python custom.py --model=mobilenet_thin --resize=432x368 --leg=right/left(choose) --vidlocation=something.mp4
+➜ python squat_counter.py --model=mobilenet_thin --resize=432x368 --leg=right/left(choose) --vidlocation=something.mp4
+```
+
+```bash
+➜ python bench_press_counter.py --model=mobilenet_thin --resize=432x368 --leg=right/left(choose) --vidlocation=something.mp4
 ```
