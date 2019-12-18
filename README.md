@@ -20,7 +20,7 @@ Using pose-net to count the number of squats done.
 ➜ python bench_press_counter.py --model=mobilenet_thin --resize=432x368 --leg=right/left(choose) --vidlocation=something.mp4
 ```
 
-## Outputs of the package interms of body parts
+## Outputs of the package in terms of body parts
 ```
 0: Nose
 1: Sternum
