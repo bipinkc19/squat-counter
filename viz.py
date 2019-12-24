@@ -156,7 +156,6 @@ if __name__ == '__main__':
             break #wait until any key is pressed
     cv2.destroyAllWindows()
 
-
         # # make an agg figure
         # fig, ax = plt.subplots()
         # ax.plot(angles_l_shldr_elb_palm, counters)

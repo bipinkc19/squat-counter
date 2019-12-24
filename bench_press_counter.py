@@ -1,11 +1,11 @@
 import argparse
+import imutils
 
 import cv2
 import numpy as np
-from scipy import ndimage
-
 from tf_pose.estimator import TfPoseEstimator
 from tf_pose.networks import get_graph_path, model_wh
+
 
 # python custom.py --model=mobilenet_thin --resize=432x368
 def str2bool(v):
@@ -28,7 +28,7 @@ def angle_between_points(a, b, c):
 
 font = cv2.FONT_HERSHEY_SIMPLEX
 bottomLeftCornerOfText = (10,500)
-fontScale = 0.5
+fontScale = 1.5
 fontColor = (255, 255, 255)
 lineType = 2
 
@@ -55,12 +55,12 @@ if __name__ == '__main__':
         e = TfPoseEstimator(get_graph_path(args.model), target_size=(w, h), trt_bool=str2bool(args.tensorrt))
     else:
         e = TfPoseEstimator(get_graph_path(args.model), target_size=(432, 368), trt_bool=str2bool(args.tensorrt))
-
+    
     cam = cv2.VideoCapture(args.vidlocation)
     ret_val, image = cam.read()
 
     fourcc = cv2.VideoWriter_fourcc(*'XVID')
-    out = cv2.VideoWriter('press_counter_new.mp4', fourcc, 60.0, (532, 612))
+    out = cv2.VideoWriter('press_counter_new_2.mp4', fourcc, 30.0, (1920, 1080))
 
     count_of_presses = 0
     press_pos = 0
@@ -77,34 +77,35 @@ if __name__ == '__main__':
 
         if ret_val==False:
             break
-        image = ndimage.rotate(image, 90)
-
-        # image = cv2.resize(image, (432, 368))
+        
+        image = cv2.flip(image, 1)
+        image = imutils.rotate(image, 45)
+        image = cv2.resize(image, (1920, 1080))
         # image = cv2.resize(cv2.imread('./squat.jpg'), (432, 368))
         humans = e.inference(image, resize_to_default=(w > 0 and h > 0), upsample_size=args.resize_out_ratio)
-    
-        # for i in humans[0].body_parts.keys():
-        #     center = (int(humans[0].body_parts[i].x * w + 0.5), int(humans[0].body_parts[i].y * h + 0.5))
-        #     print(center)
-        #     print(i, humans[0].body_parts[i], humans[0].body_parts[i].x, humans[0].body_parts[i].y, humans[0].body_parts[i].score)
-        # if len(humans) != 1:
-        #     continue
-
+        print(humans)
+        for i in humans[0].body_parts.keys():
+            center = (int(humans[0].body_parts[i].x * w + 0.5), int(humans[0].body_parts[i].y * h + 0.5))
+            print(center)
+            print(i, humans[0].body_parts[i], humans[0].body_parts[i].x, humans[0].body_parts[i].y, humans[0].body_parts[i].score)
+        if len(humans) != 1:
+            continue
+        cv2.waitKey(0)
         if args.leg == 'left':
             try:
                 radius = 20
                 color = (255, 0, 0)
                 thickness = 5
-                center_4 = (int(humans[0].body_parts[4].x * w), int(humans[0].body_parts[4].y * h)) # left shoulder
-                center_5 = (int(humans[0].body_parts[5].x * w), int(humans[0].body_parts[5].y * h)) # left elbow
-                center_6 = (int(humans[0].body_parts[6].x * w), int(humans[0].body_parts[6].y * h)) # left palm
+                center_4 = (int(humans[0].body_parts[5].x * w), int(humans[0].body_parts[2].y * h)) # left shoulder
+                center_5 = (int(humans[0].body_parts[6].x * w), int(humans[0].body_parts[5].y * h)) # left elbow
+                center_6 = (int(humans[0].body_parts[7].x * w), int(humans[0].body_parts[6].y * h)) # left palm
 
                 press_left_angle = angle_between_points(center_5, center_6, center_4)
-                press_pos = 1 if press_left_angle <= 80 else 0
+                press_pos = 1 if press_left_angle <= 50 else 0
                 if prev_press_pos - press_pos == 1:
                     count_of_presses +=1
                 prev_press_pos = press_pos
-                print(press_left_angle, press_pos, count_of_presses)
+                # print(press_left_angle, press_pos, count_of_presses)
                 cv2.putText(image, 'Number of presses: ' + str(count_of_presses),
                     (10, 100),
                     font, 
@@ -160,7 +161,7 @@ if __name__ == '__main__':
                     lineType
                 )
 
-                cv2.putText(image, 'Tracking leg: Left',
+                cv2.putText(image, 'Tracking arm: Left',
                     (10, 400),
                     font, 
                     fontScale,
@@ -176,7 +177,7 @@ if __name__ == '__main__':
                 center_3 = (int(humans[0].body_parts[3].x * w), int(humans[0].body_parts[3].y * h)) # right palm
 
                 press_right_angle = angle_between_points(center_1, center_2, center_3)
-                press_pos = 1 if press_right_angle <= 80 else 0
+                press_pos = 1 if press_right_angle <= 50 else 0
                 if prev_press_pos - press_pos == 1:
                     count_of_presses +=1
                 prev_press_pos = press_pos
@@ -204,7 +205,7 @@ if __name__ == '__main__':
                     lineType
                 )
 
-                cv2.putText(image, 'Tracking leg: Right',
+                cv2.putText(image, 'Tracking arm: Right',
                     (10, 350),
                     font, 
                     fontScale,
@@ -248,11 +249,11 @@ if __name__ == '__main__':
         image = TfPoseEstimator.draw_humans(image, humans, imgcopy=False)
         print(image.shape)
         out.write(image)
-        i += 1
-        # if i > 30:
+        # i += 1
+        # if i > 10:
         #     break
         cv2.imshow('tf-pose-estimation result', image)
-        # image = cv2.resize(image, (1080, 1920))
+        image = cv2.resize(image, (1920, 1080))
 
         if cv2.waitKey(1) == 'q':
             break
