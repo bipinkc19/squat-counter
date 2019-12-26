@@ -139,6 +139,10 @@ def process_video(vid_location, model_type, processed_vid_location):
             break
         counters.append(counter)
         parts = parts_frames[counter]
+
+        wrist_pos = get_wrist_position(parts['left_palm'], parts['right_palm'])
+        
+        wrist_positions.append(wrist_pos)
     
         try:
             l_shoulder, r_shoulder = extend_lines(parts['left_shoulder'], parts['right_shoulder'], 'n')
@@ -164,16 +168,30 @@ def process_video(vid_location, model_type, processed_vid_location):
         except:
             top, bottom = None, None
         counter += 1
-        
+        print(parts['left_palm'], parts['right_palm'])
         try:
-            if parts['right_shoulder'][0] < parts['left_shoulder'][0]:
-                shoulder_angle = angle_between_points(parts['left_shoulder'], parts['right_shoulder'], (0, parts['right_shoulder'][1])) - 90
-                
-            else:
-                shoulder_angle = angle_between_points(parts['right_shoulder'], parts['left_shoulder'], (0, parts['left_shoulder'][1])) + 90
+            # Failed attempt at finding the angular movement
+            # if (parts['right_shoulder'][0] > parts['left_shoulder'][0]):
+            #     # shoulder_angle = angle_between_points(parts['right_shoulder'], parts['left_shoulder'], (0, parts['left_shoulder'][1])) + 90
+            #     if parts['left_palm'][0] is not None and (parts['left_palm'][0]<parts['right_shoulder'][0] and parts['left_palm'][1]<parts['right_shoulder'][1]):
+            #         print("yes")
+            #         shoulder_angle = angle_between_points(parts['left_shoulder'], parts['right_shoulder'], (0, parts['right_shoulder'][1])) - 90
+            #     elif parts['right_palm'][0] is not None and (parts['right_palm'][0]<parts['right_shoulder'][0] and parts['right_palm'][1]<parts['right_shoulder'][1]):
+            #         print("yes_1")
+            #         shoulder_angle = angle_between_points(parts['left_shoulder'], parts['right_shoulder'], (0, parts['right_shoulder'][1])) - 90
+            #     elif parts['left_palm'][0] is None and parts['right_palm'][0] is None:
+            #         print("None")
+            #         shoulder_angle = None
+            #     else:
+            #         print('latest')
+            #         shoulder_angle = angle_between_points(parts['right_shoulder'], parts['left_shoulder'], (0, parts['left_shoulder'][1])) + 90
+            # else:
+            #     print('no')
+            shoulder_angle = angle_between_points(parts['right_shoulder'], parts['left_shoulder'], (0, parts['left_shoulder'][1])) + 90
         except:
+            print('exp')
             shoulder_angle = None
-        
+        print(shoulder_angle)
         try:
             if parts['right_hip'][0] < parts['left_hip'][0]:
                 hip_angle = angle_between_points(parts['left_hip'], parts['right_hip'], (0, parts['right_hip'][1])) - 90
@@ -204,9 +222,6 @@ def process_video(vid_location, model_type, processed_vid_location):
                 fontScale, color, thickness, cv2.LINE_AA)
         except:
             pass
-        wrist_pos = get_wrist_position(parts['left_palm'], parts['right_palm'])
-        # cv2.imshow('image', image)
-        wrist_positions.append(wrist_pos)
         
         # get x and y vectors
         x = np.array(wrist_positions)[:, 0]
@@ -217,8 +232,9 @@ def process_video(vid_location, model_type, processed_vid_location):
         fig, ax = plt.subplots()
         ax.imshow(image)
         ax.plot(x, y)
+        # ax.scatter(parts['right_shoulder'][0], parts['right_shoulder'][1])
         fig.canvas.draw()
-        
+        plt.show()
         image_ = np.array(fig.canvas.renderer.buffer_rgba())
 
         # cv2.imshow('Left Elbow Angle', image_[:, :, 0:3])
@@ -229,4 +245,5 @@ def process_video(vid_location, model_type, processed_vid_location):
     out.release()
 
 # process_video(vid_location="input.mp4", model_type="cmu", processed_vid_location="test_out.mp4")
-process_video(vid_location="test_in.mp4", model_type="cmu", processed_vid_location="test_out.mp4")
+process_video(vid_location="input.mp4", model_type="mobilenet_thin", processed_vid_location="test_out.mp4")
+# mobilenet_thin
